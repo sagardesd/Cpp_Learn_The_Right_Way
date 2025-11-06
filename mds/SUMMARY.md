@@ -5,6 +5,6 @@
 - [Storage Classes](./storage_classes.md)
 - [Pointers](./cpp_pointers_tutorial_detail.md)
 - [Classes and Objects](./cpp_class_object_guide.md)
-- [OOPS Concept - Encapsulation](./encapsulation.md)
+- [OOPs Concept - Encapsulation](./encapsulation.md)
 - [Constuctors In-depth](./constrctor.md)
 - [Inheritance and Construtors](./constructor_and_inheritance.md)
