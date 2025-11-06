@@ -80,7 +80,7 @@ Car yourCar;    // Object 2
 Car rentalCar;  // Object 3
 ```
 
-![Car Blueprint Diagram](../images/class_object.png)
+![Car Blueprint Diagram](images/class_object.png)
 
 [↑ Back to Table of Contents](#table-of-contents)
 
@@ -251,7 +251,7 @@ public:
 
 ### 4.4 Access Specifier Comparison
 
-![Access Sepcifiers](../images/access_specifiers.png)
+![Access Sepcifiers](images/access_specifiers.png)
 
 ### 4.5 When to Use Which Access Specifier
 
@@ -413,7 +413,7 @@ delete obj2;
 
 ### 5.5 Comparison: Stack vs Heap Allocation
 
-![Stack vs Heap Allocation](../images/stak_vs_heap.png)
+![Stack vs Heap Allocation](images/stak_vs_heap.png)
 
 ### Complete Example: Different Ways to Create Objects
 
