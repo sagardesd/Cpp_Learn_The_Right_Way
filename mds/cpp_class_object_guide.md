@@ -80,16 +80,7 @@ Car yourCar;    // Object 2
 Car rentalCar;  // Object 3
 ```
 
-```mermaid
-graph TD
-    A[Class: Car Blueprint] --> B[Object 1: Red Toyota]
-    A --> C[Object 2: Blue Honda]
-    A --> D[Object 3: Black Ford]
-    
-    B --> B1[brand: Toyota<br/>model: Camry<br/>speed: 0]
-    C --> C1[brand: Honda<br/>model: Accord<br/>speed: 0]
-    D --> D1[brand: Ford<br/>model: Mustang<br/>speed: 0]
-```
+![Car Blueprint Diagram](../images/class_object.png)
 
 [↑ Back to Table of Contents](#table-of-contents)
 
@@ -260,16 +251,7 @@ public:
 
 ### 4.4 Access Specifier Comparison
 
-```mermaid
-graph LR
-    A[Access Specifiers] --> B[Public]
-    A --> C[Private]
-    A --> D[Protected]
-    
-    B --> B1[Accessible everywhere]
-    C --> C1[Accessible only within class<br/>by member functions]
-    D --> D1[Accessible in class<br/>and derived classes]
-```
+![Access Sepcifiers](../images/access_specifiers.png)
 
 ### 4.5 When to Use Which Access Specifier
 
@@ -431,24 +413,7 @@ delete obj2;
 
 ### 5.5 Comparison: Stack vs Heap Allocation
 
-```mermaid
-graph TD
-    A[Object Creation] --> B[Stack Allocation]
-    A --> C[Heap Allocation]
-    
-    B --> B1[Syntax: Car myCar;]
-    B --> B2[Automatic destruction]
-    B --> B3[Faster]
-    B --> B4[Limited size]
-    
-    C --> C1[Syntax: Car* ptr = new Car;]
-    C --> C2[Manual deletion required]
-    C --> C3[Slower]
-    C --> C4[Larger objects possible]
-    
-    style B fill:#90EE90
-    style C fill:#FFB6C6
-```
+![Stack vs Heap Allocation](../images/stak_vs_heap.png)
 
 ### Complete Example: Different Ways to Create Objects
 
