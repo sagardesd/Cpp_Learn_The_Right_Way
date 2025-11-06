@@ -34,7 +34,7 @@ Think of it as putting data in a **protective capsule** where:
 - Access is controlled through specific methods
 - Data integrity is maintained through validation
 
-![Encapsulation](image/encap.png)
+![Encapsulation](images/encap.png)
 
 ### Simple Analogy
 
