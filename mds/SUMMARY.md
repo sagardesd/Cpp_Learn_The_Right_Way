@@ -7,5 +7,5 @@
 - [Classes and Objects](./cpp_class_object_guide.md)
 - [Encapsulation](./encapsulation.md)
 - [Inheritance](./inheritance.md)
-- [Constuctors and Destructors](./constrctor.md)
+- [Constuctors and Destructors](./constructor.md)
 - [Construtors and Destructors in Inheritance](./constructor_and_inheritance.md)
