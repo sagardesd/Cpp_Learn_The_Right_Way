@@ -1,6 +1,6 @@
 # Summary
 
-- [Data Types, Variables, and Input/Output in C++](./datatypes.md)
+- [Data Types, Variables, and Input/Output](./datatypes.md)
 - [Control Flow](./control_flow.md)
 - [Storage Classes](./storage_classes.md)
 - [Pointers](./cpp_pointers_tutorial_detail.md)
