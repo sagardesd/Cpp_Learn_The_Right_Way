@@ -7865,6 +7865,1238 @@ Inside base class destructor
 </ul>
 <p>In short, <strong>destruction happens bottom-up</strong>, mirroring the <strong>top-down</strong> order of construction.</p>
 <p><a href="constructor_and_inheritance.html#table-of-contents">↑ Back to Table of Contents</a></p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="c-static-members"><a class="header" href="#c-static-members">C++ Static Members</a></h1>
+<h2 id="table-of-contents-7"><a class="header" href="#table-of-contents-7">Table of Contents</a></h2>
+<ol>
+<li><a href="static.html#1-static-data-members-in-a-class">Static Data Members in a Class</a></li>
+<li><a href="static.html#2-static-functions-in-a-class">Static Functions in a Class</a></li>
+<li><a href="static.html#3-why-static-functions-cannot-access-non-static-members-the-this-pointer-problem">Why Static Functions Cannot Access Non-Static Members (The <code>this</code> Pointer Problem)</a></li>
+<li><a href="static.html#4-when-to-use-static-data-members-real-world-examples">When to Use Static Data Members: Real-World Examples</a></li>
+<li><a href="static.html#5-singleton-design-pattern-using-static-members">Singleton Design Pattern: Using Static Members</a></li>
+<li><a href="static.html#6-static-vs-non-static-key-differences">Static vs Non-Static: Key Differences</a></li>
+</ol>
+<hr />
+<h2 id="1-static-data-members-in-a-class"><a class="header" href="#1-static-data-members-in-a-class">1. Static Data Members in a Class</a></h2>
+<h3 id="what-are-static-data-members"><a class="header" href="#what-are-static-data-members">What are Static Data Members?</a></h3>
+<p>A <strong>static data member</strong> is a class member that is <strong>shared by all objects</strong> of that class. Instead of each object having its own copy, there's only <strong>one copy</strong> that belongs to the class itself.</p>
+<h3 id="basic-syntax-2"><a class="header" href="#basic-syntax-2">Basic Syntax</a></h3>
+<pre><code class="language-cpp">class MyClass {
+public:
+    static int count;  // Declaration inside class
+    int regularVar;    // Non-static (each object has its own copy)
+};
+
+// Definition outside class (REQUIRED!)
+int MyClass::count = 0;
+</code></pre>
+<p><strong>Important:</strong> Static data members must be defined outside the class (except for <code>const static</code> integral types).</p>
+<h3 id="simple-example-1"><a class="header" href="#simple-example-1">Simple Example</a></h3>
+<pre><code class="language-cpp">class Student {
+public:
+    string name;
+    static int totalStudents;  // Shared by ALL students
+    
+    Student(string n) {
+        name = n;
+        totalStudents++;  // Increment shared counter
+    }
+};
+
+// Must define static member outside class
+int Student::totalStudents = 0;
+
+int main() {
+    cout &lt;&lt; "Total students: " &lt;&lt; Student::totalStudents &lt;&lt; endl;  // 0
+    
+    Student s1("Alice");
+    cout &lt;&lt; "Total students: " &lt;&lt; Student::totalStudents &lt;&lt; endl;  // 1
+    
+    Student s2("Bob");
+    cout &lt;&lt; "Total students: " &lt;&lt; Student::totalStudents &lt;&lt; endl;  // 2
+    
+    Student s3("Charlie");
+    cout &lt;&lt; "Total students: " &lt;&lt; Student::totalStudents &lt;&lt; endl;  // 3
+    
+    return 0;
+}
+</code></pre>
+<h3 id="memory-layout-diagram-1"><a class="header" href="#memory-layout-diagram-1">Memory Layout Diagram</a></h3>
+<pre><code>Regular (Non-Static) Members:
+Each object has its own copy
+
+    s1 object:              s2 object:              s3 object:
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│ name: "Alice"   │     │ name: "Bob"     │     │ name: "Charlie" │
+└─────────────────┘     └─────────────────┘     └─────────────────┘
+
+
+Static Members:
+Only ONE copy shared by all objects
+
+                    ┌─────────────────────────┐
+                    │ totalStudents: 3        │ ◄─── Shared by all!
+                    └─────────────────────────┘
+                              ▲
+                              │
+              ┌───────────────┼───────────────┐
+              │               │               │
+          s1 uses         s2 uses         s3 uses
+</code></pre>
+<h3 id="key-characteristics-of-static-data-members"><a class="header" href="#key-characteristics-of-static-data-members">Key Characteristics of Static Data Members</a></h3>
+<ol>
+<li><strong>Shared Across All Objects</strong>: Only one copy exists, regardless of how many objects are created</li>
+<li><strong>Belongs to Class, Not Objects</strong>: Can be accessed even without creating any object</li>
+<li><strong>Must Be Defined Outside Class</strong>: Declaration inside, definition outside (with initialization)</li>
+<li><strong>Lifetime</strong>: Exists for the entire program duration</li>
+<li><strong>Access</strong>: Can be accessed using class name (<code>ClassName::staticVar</code>) or object (<code>obj.staticVar</code>)</li>
+</ol>
+<h3 id="accessing-static-data-members"><a class="header" href="#accessing-static-data-members">Accessing Static Data Members</a></h3>
+<pre><code class="language-cpp">class Counter {
+public:
+    static int count;
+};
+
+int Counter::count = 100;
+
+int main() {
+    // Method 1: Using class name (Preferred)
+    cout &lt;&lt; Counter::count &lt;&lt; endl;  // 100
+    
+    // Method 2: Using object
+    Counter c1;
+    cout &lt;&lt; c1.count &lt;&lt; endl;  // 100
+    
+    Counter c2;
+    c2.count = 200;
+    
+    // All ways show the same value (shared!)
+    cout &lt;&lt; Counter::count &lt;&lt; endl;  // 200
+    cout &lt;&lt; c1.count &lt;&lt; endl;        // 200
+    cout &lt;&lt; c2.count &lt;&lt; endl;        // 200
+    
+    return 0;
+}
+</code></pre>
+<p><a href="static.html#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr />
+<h2 id="2-static-functions-in-a-class"><a class="header" href="#2-static-functions-in-a-class">2. Static Functions in a Class</a></h2>
+<h3 id="what-are-static-member-functions"><a class="header" href="#what-are-static-member-functions">What are Static Member Functions?</a></h3>
+<p>A <strong>static member function</strong> is a function that belongs to the class itself, not to any specific object. It can be called without creating an object.</p>
+<h3 id="basic-syntax-3"><a class="header" href="#basic-syntax-3">Basic Syntax</a></h3>
+<pre><code class="language-cpp">class MyClass {
+public:
+    static int count;
+    
+    static void displayCount() {  // Static function
+        cout &lt;&lt; "Count: " &lt;&lt; count &lt;&lt; endl;
+    }
+};
+
+int MyClass::count = 5;
+
+int main() {
+    // Call without creating object
+    MyClass::displayCount();  // Count: 5
+    
+    // Can also call with object (but not recommended)
+    MyClass obj;
+    obj.displayCount();  // Count: 5
+    
+    return 0;
+}
+</code></pre>
+<h3 id="real-world-example-bank-account"><a class="header" href="#real-world-example-bank-account">Real-World Example: Bank Account</a></h3>
+<pre><code class="language-cpp">class BankAccount {
+private:
+    string accountHolder;
+    double balance;
+    static double interestRate;  // Same for all accounts
+    static int totalAccounts;
+    
+public:
+    BankAccount(string name, double bal) {
+        accountHolder = name;
+        balance = bal;
+        totalAccounts++;
+    }
+    
+    // Static function to set interest rate for ALL accounts
+    static void setInterestRate(double rate) {
+        interestRate = rate;
+    }
+    
+    // Static function to get total accounts
+    static int getTotalAccounts() {
+        return totalAccounts;
+    }
+    
+    void applyInterest() {
+        balance += balance * interestRate;
+    }
+    
+    void display() {
+        cout &lt;&lt; accountHolder &lt;&lt; ": $" &lt;&lt; balance &lt;&lt; endl;
+    }
+};
+
+// Define static members
+double BankAccount::interestRate = 0.05;
+int BankAccount::totalAccounts = 0;
+
+int main() {
+    BankAccount::setInterestRate(0.07);  // Set for ALL accounts
+    
+    BankAccount acc1("Alice", 1000);
+    BankAccount acc2("Bob", 2000);
+    
+    cout &lt;&lt; "Total accounts: " &lt;&lt; BankAccount::getTotalAccounts() &lt;&lt; endl;  // 2
+    
+    acc1.applyInterest();
+    acc2.applyInterest();
+    
+    acc1.display();  // Alice: $1070
+    acc2.display();  // Bob: $2140
+    
+    return 0;
+}
+</code></pre>
+<h3 id="characteristics-of-static-functions"><a class="header" href="#characteristics-of-static-functions">Characteristics of Static Functions</a></h3>
+<ol>
+<li><strong>No <code>this</code> Pointer</strong>: Cannot access non-static members directly</li>
+<li><strong>Called Using Class Name</strong>: <code>ClassName::functionName()</code></li>
+<li><strong>Can Access Only Static Members</strong>: Can use static data members and other static functions</li>
+<li><strong>Cannot Be <code>const</code> or <code>virtual</code></strong>: These keywords require a <code>this</code> pointer</li>
+<li><strong>Cannot Be Overridden</strong>: No polymorphism with static functions</li>
+</ol>
+<h3 id="what-static-functions-can-and-cannot-do"><a class="header" href="#what-static-functions-can-and-cannot-do">What Static Functions CAN and CANNOT Do</a></h3>
+<pre><code class="language-cpp">class Example {
+private:
+    int nonStaticVar;
+    static int staticVar;
+    
+public:
+    static void staticFunc() {
+        // ✓ CAN access static members
+        staticVar = 100;
+        
+        // ✗ CANNOT access non-static members
+        // nonStaticVar = 50;  // ERROR!
+        
+        // ✗ CANNOT call non-static functions
+        // nonStaticFunc();  // ERROR!
+        
+        // ✓ CAN call other static functions
+        anotherStaticFunc();
+    }
+    
+    static void anotherStaticFunc() {
+        cout &lt;&lt; "Another static function" &lt;&lt; endl;
+    }
+    
+    void nonStaticFunc() {
+        // ✓ Non-static can access everything
+        nonStaticVar = 10;
+        staticVar = 20;
+        staticFunc();
+    }
+};
+
+int Example::staticVar = 0;
+</code></pre>
+<p><a href="static.html#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr />
+<h2 id="3-why-static-functions-cannot-access-non-static-members-the-this-pointer-problem"><a class="header" href="#3-why-static-functions-cannot-access-non-static-members-the-this-pointer-problem">3. Why Static Functions Cannot Access Non-Static Members (The <code>this</code> Pointer Problem)</a></h2>
+<h3 id="understanding-the-this-pointer-1"><a class="header" href="#understanding-the-this-pointer-1">Understanding the <code>this</code> Pointer</a></h3>
+<p>Every <strong>non-static member function</strong> has a hidden parameter called <code>this</code> - a pointer to the object that called the function.</p>
+<pre><code class="language-cpp">class MyClass {
+public:
+    int x;
+    
+    void setX(int val) {
+        x = val;  // Actually: this-&gt;x = val;
+    }
+};
+
+MyClass obj;
+obj.setX(10);  // Compiler passes &amp;obj as 'this' pointer
+</code></pre>
+<p><strong>Behind the scenes:</strong></p>
+<pre><code class="language-cpp">// What you write:
+void setX(int val) {
+    x = val;
+}
+
+// What compiler sees:
+void setX(MyClass* this, int val) {  // Hidden 'this' pointer!
+    this-&gt;x = val;
+}
+
+// How it's called:
+obj.setX(10);      // You write this
+setX(&amp;obj, 10);    // Compiler generates this
+</code></pre>
+<h3 id="the-problem-with-static-functions"><a class="header" href="#the-problem-with-static-functions">The Problem with Static Functions</a></h3>
+<p><strong>Static functions have NO <code>this</code> pointer</strong> because they don't belong to any specific object!</p>
+<pre><code class="language-cpp">class MyClass {
+public:
+    int x;                    // Non-static member
+    static int y;             // Static member
+    
+    // Non-static function: Has 'this' pointer
+    void nonStaticFunc() {
+        x = 10;               // OK: Uses this-&gt;x
+        y = 20;               // OK: Static member
+    }
+    
+    // Static function: NO 'this' pointer
+    static void staticFunc() {
+        // x = 10;            // ERROR! Which object's x?
+                              // No 'this' pointer to refer to!
+        
+        y = 20;               // OK: Static member doesn't need 'this'
+    }
+};
+
+int MyClass::y = 0;
+</code></pre>
+<h3 id="visual-explanation"><a class="header" href="#visual-explanation">Visual Explanation</a></h3>
+<pre><code>Scenario: Three objects exist
+
+    obj1:               obj2:               obj3:
+┌──────────┐        ┌──────────┐        ┌──────────┐
+│ x = 5    │        │ x = 10   │        │ x = 15   │
+└──────────┘        └──────────┘        └──────────┘
+
+
+When you call: obj1.nonStaticFunc()
+                     ▼
+            ┌────────────────────┐
+            │ nonStaticFunc()    │
+            │ this = &amp;obj1   ◄───┼─── 'this' points to obj1
+            │ x = this-&gt;x    ◄───┼─── Accesses obj1's x
+            └────────────────────┘
+
+
+When you call: MyClass::staticFunc()
+                     ▼
+            ┌────────────────────┐
+            │ staticFunc()       │
+            │ NO 'this' pointer! │ ◄─── Which object's x?
+            │ x = ???            │      There's no way to know!
+            └────────────────────┘
+                     ▲
+                     │
+              Doesn't belong to
+              any specific object
+</code></pre>
+<h3 id="why-this-design-makes-sense"><a class="header" href="#why-this-design-makes-sense">Why This Design Makes Sense</a></h3>
+<pre><code class="language-cpp">class Counter {
+public:
+    static int count;
+    int id;
+    
+    Counter() {
+        id = ++count;
+    }
+    
+    static void resetCounter() {
+        count = 0;  // ✓ Makes sense: Reset shared counter
+        
+        // id = 0;  // ✗ Doesn't make sense: Which object's id?
+                    //   There might be 100 Counter objects!
+    }
+};
+
+int Counter::count = 0;
+
+int main() {
+    Counter c1, c2, c3;  // count = 3, ids are 1, 2, 3
+    
+    Counter::resetCounter();  // Resets shared counter
+    
+    // But which id should be reset? c1's? c2's? c3's? All?
+    // This is why static functions can't access non-static members!
+    
+    return 0;
+}
+</code></pre>
+<h3 id="workaround-pass-object-as-parameter"><a class="header" href="#workaround-pass-object-as-parameter">Workaround: Pass Object as Parameter</a></h3>
+<p>If a static function needs to work with non-static members, pass the object as a parameter:</p>
+<pre><code class="language-cpp">class MyClass {
+public:
+    int x;
+    static int y;
+    
+    static void staticFunc(MyClass&amp; obj) {
+        obj.x = 10;   // ✓ Now we know which object!
+        y = 20;       // ✓ Static member
+    }
+};
+
+int MyClass::y = 0;
+
+int main() {
+    MyClass obj;
+    MyClass::staticFunc(obj);  // Pass the object explicitly
+    return 0;
+}
+</code></pre>
+<h3 id="summary-this-pointer-table"><a class="header" href="#summary-this-pointer-table">Summary: <code>this</code> Pointer Table</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Function Type</th><th>Has <code>this</code> Pointer?</th><th>Can Access Non-Static Members?</th><th>Can Access Static Members?</th></tr></thead><tbody>
+<tr><td>Non-Static Member Function</td><td>✓ Yes</td><td>✓ Yes</td><td>✓ Yes</td></tr>
+<tr><td>Static Member Function</td><td>✗ No</td><td>✗ No</td><td>✓ Yes</td></tr>
+<tr><td>Global Function</td><td>✗ No</td><td>✗ N/A</td><td>✗ N/A</td></tr>
+</tbody></table>
+</div>
+<p><a href="static.html#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr />
+<h2 id="4-when-to-use-static-data-members-real-world-examples"><a class="header" href="#4-when-to-use-static-data-members-real-world-examples">4. When to Use Static Data Members: Real-World Examples</a></h2>
+<h3 id="use-case-1-counting-objects"><a class="header" href="#use-case-1-counting-objects">Use Case 1: Counting Objects</a></h3>
+<p><strong>Problem:</strong> You need to know how many objects of a class exist at any time.</p>
+<pre><code class="language-cpp">class Employee {
+private:
+    string name;
+    static int employeeCount;  // Shared counter
+    
+public:
+    Employee(string n) : name(n) {
+        employeeCount++;
+        cout &lt;&lt; "Employee created. Total: " &lt;&lt; employeeCount &lt;&lt; endl;
+    }
+    
+    ~Employee() {
+        employeeCount--;
+        cout &lt;&lt; "Employee destroyed. Total: " &lt;&lt; employeeCount &lt;&lt; endl;
+    }
+    
+    static int getEmployeeCount() {
+        return employeeCount;
+    }
+};
+
+int Employee::employeeCount = 0;
+
+int main() {
+    cout &lt;&lt; "Employees: " &lt;&lt; Employee::getEmployeeCount() &lt;&lt; endl;  // 0
+    
+    {
+        Employee e1("Alice");    // Total: 1
+        Employee e2("Bob");      // Total: 2
+        
+        cout &lt;&lt; "Current employees: " &lt;&lt; Employee::getEmployeeCount() &lt;&lt; endl;  // 2
+    }  // e1 and e2 destroyed here
+    
+    cout &lt;&lt; "Employees: " &lt;&lt; Employee::getEmployeeCount() &lt;&lt; endl;  // 0
+    
+    return 0;
+}
+</code></pre>
+<p><strong>Why Static?</strong> Every employee needs to update the <strong>same</strong> counter. If it were non-static, each employee would have their own count (useless!).</p>
+<h3 id="use-case-2-shared-configuration"><a class="header" href="#use-case-2-shared-configuration">Use Case 2: Shared Configuration</a></h3>
+<p><strong>Problem:</strong> All objects need to share the same configuration settings.</p>
+<pre><code class="language-cpp">class Logger {
+private:
+    string moduleName;
+    static string logLevel;      // Shared by all loggers
+    static bool timestampEnabled; // Shared by all loggers
+    
+public:
+    Logger(string module) : moduleName(module) {}
+    
+    static void setLogLevel(string level) {
+        logLevel = level;  // Changes for ALL loggers
+    }
+    
+    static void enableTimestamp(bool enable) {
+        timestampEnabled = enable;  // Changes for ALL loggers
+    }
+    
+    void log(string message) {
+        if (timestampEnabled) {
+            cout &lt;&lt; "[" &lt;&lt; __TIME__ &lt;&lt; "] ";
+        }
+        cout &lt;&lt; "[" &lt;&lt; logLevel &lt;&lt; "] ";
+        cout &lt;&lt; "[" &lt;&lt; moduleName &lt;&lt; "] ";
+        cout &lt;&lt; message &lt;&lt; endl;
+    }
+};
+
+string Logger::logLevel = "INFO";
+bool Logger::timestampEnabled = true;
+
+int main() {
+    Logger networkLogger("Network");
+    Logger databaseLogger("Database");
+    
+    networkLogger.log("Connection established");
+    databaseLogger.log("Query executed");
+    
+    // Change log level for ALL loggers at once
+    Logger::setLogLevel("DEBUG");
+    
+    networkLogger.log("Detailed network info");
+    databaseLogger.log("Detailed database info");
+    
+    return 0;
+}
+
+/* Output:
+   [TIME] [INFO] [Network] Connection established
+   [TIME] [INFO] [Database] Query executed
+   [TIME] [DEBUG] [Network] Detailed network info
+   [TIME] [DEBUG] [Database] Detailed database info
+*/
+</code></pre>
+<p><strong>Why Static?</strong> You want one central configuration that affects all loggers. Changing it once updates all instances.</p>
+<h3 id="use-case-3-shared-resource-pool"><a class="header" href="#use-case-3-shared-resource-pool">Use Case 3: Shared Resource Pool</a></h3>
+<p><strong>Problem:</strong> All objects need to access the same limited resource (e.g., database connections).</p>
+<pre><code class="language-cpp">class DatabaseConnection {
+private:
+    int connectionID;
+    static int maxConnections;        // Limit for ALL connections
+    static int activeConnections;     // Current count
+    
+public:
+    DatabaseConnection() {
+        if (activeConnections &gt;= maxConnections) {
+            throw runtime_error("Connection pool exhausted!");
+        }
+        connectionID = ++activeConnections;
+        cout &lt;&lt; "Connection #" &lt;&lt; connectionID &lt;&lt; " established" &lt;&lt; endl;
+    }
+    
+    ~DatabaseConnection() {
+        cout &lt;&lt; "Connection #" &lt;&lt; connectionID &lt;&lt; " closed" &lt;&lt; endl;
+        activeConnections--;
+    }
+    
+    static void setMaxConnections(int max) {
+        maxConnections = max;
+    }
+    
+    static int getActiveConnections() {
+        return activeConnections;
+    }
+};
+
+int DatabaseConnection::maxConnections = 3;  // Pool size: 3
+int DatabaseConnection::activeConnections = 0;
+
+int main() {
+    try {
+        DatabaseConnection::setMaxConnections(2);  // Limit to 2
+        
+        DatabaseConnection db1;  // OK: Connection #1
+        DatabaseConnection db2;  // OK: Connection #2
+        DatabaseConnection db3;  // ERROR: Pool exhausted!
+        
+    } catch (const exception&amp; e) {
+        cout &lt;&lt; "Error: " &lt;&lt; e.what() &lt;&lt; endl;
+    }
+    
+    return 0;
+}
+
+/* Output:
+   Connection #1 established
+   Connection #2 established
+   Error: Connection pool exhausted!
+   Connection #2 closed
+   Connection #1 closed
+*/
+</code></pre>
+<p><strong>Why Static?</strong> The limit and current count must be shared across all connections to enforce the pool size.</p>
+<h3 id="use-case-4-unique-id-generation"><a class="header" href="#use-case-4-unique-id-generation">Use Case 4: Unique ID Generation</a></h3>
+<p><strong>Problem:</strong> Each object needs a unique ID, and no two objects should have the same ID.</p>
+<pre><code class="language-cpp">class Task {
+private:
+    int taskID;
+    string description;
+    static int nextID;  // Shared ID generator
+    
+public:
+    Task(string desc) : description(desc) {
+        taskID = nextID++;  // Get unique ID and increment for next object
+        cout &lt;&lt; "Task #" &lt;&lt; taskID &lt;&lt; " created: " &lt;&lt; description &lt;&lt; endl;
+    }
+    
+    static void resetIDCounter() {
+        nextID = 1;
+    }
+    
+    int getID() const {
+        return taskID;
+    }
+};
+
+int Task::nextID = 1;
+
+int main() {
+    Task t1("Write code");       // Task #1
+    Task t2("Test code");        // Task #2
+    Task t3("Deploy code");      // Task #3
+    
+    cout &lt;&lt; "Task IDs: " &lt;&lt; t1.getID() &lt;&lt; ", " 
+         &lt;&lt; t2.getID() &lt;&lt; ", " &lt;&lt; t3.getID() &lt;&lt; endl;
+    
+    return 0;
+}
+
+/* Output:
+   Task #1 created: Write code
+   Task #2 created: Test code
+   Task #3 created: Deploy code
+   Task IDs: 1, 2, 3
+*/
+</code></pre>
+<p><strong>Why Static?</strong> The <code>nextID</code> must be shared to ensure every task gets a unique, sequential ID.</p>
+<h3 id="visual-summary-when-to-use-static-members"><a class="header" href="#visual-summary-when-to-use-static-members">Visual Summary: When to Use Static Members</a></h3>
+<pre><code>Use Static Data Members When:
+
+1. Counting Objects
+   ┌─────────┐ ┌─────────┐ ┌─────────┐
+   │ Object1 │ │ Object2 │ │ Object3 │
+   └────┬────┘ └────┬────┘ └────┬────┘
+        │           │           │
+        └───────────┼───────────┘
+                    ▼
+            ┌───────────────┐
+            │ count = 3     │ ◄─── Shared counter
+            └───────────────┘
+
+2. Shared Configuration
+   All objects read from the same settings
+            ┌───────────────────┐
+            │ config: "value"   │ ◄─── Single source of truth
+            └───────────────────┘
+                    ▲
+        ┌───────────┼───────────┐
+        │           │           │
+   ┌────┴────┐ ┌───┴─────┐ ┌───┴─────┐
+   │ Object1 │ │ Object2 │ │ Object3 │
+   └─────────┘ └─────────┘ └─────────┘
+
+3. Resource Pool
+   Enforcing global limits across all objects
+            ┌───────────────────────┐
+            │ maxConnections = 5    │ ◄─── Global limit
+            │ activeCount = 3       │
+            └───────────────────────┘
+
+4. Unique ID Generation
+   Sequential IDs without duplicates
+            ┌───────────────┐
+            │ nextID = 4    │ ◄─── Increments for each object
+            └───────────────┘
+</code></pre>
+<p><a href="static.html#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr />
+<h2 id="5-singleton-design-pattern-using-static-members"><a class="header" href="#5-singleton-design-pattern-using-static-members">5. Singleton Design Pattern: Using Static Members</a></h2>
+<h3 id="what-is-the-singleton-design-pattern"><a class="header" href="#what-is-the-singleton-design-pattern">What is the Singleton Design Pattern?</a></h3>
+<p>The <strong>Singleton Pattern</strong> is a design pattern that ensures a class has <strong>only one instance</strong> throughout the entire program and provides a global point of access to that instance.</p>
+<p><strong>Real-World Analogy:</strong> Think of a country's president - there can only be <strong>one</strong> president at a time, and everyone in the country refers to the same person when they say "the president."</p>
+<h3 id="why-use-singleton"><a class="header" href="#why-use-singleton">Why Use Singleton?</a></h3>
+<p>Some resources should have only one instance:</p>
+<ul>
+<li><strong>Database Connection Manager</strong> - One pool managing all connections</li>
+<li><strong>Logger</strong> - Single logging system for the entire application</li>
+<li><strong>Configuration Manager</strong> - One central configuration</li>
+<li><strong>Device Drivers</strong> - Only one driver managing hardware</li>
+<li><strong>Cache</strong> - Single shared cache for the application</li>
+</ul>
+<h3 id="the-problem-without-singleton"><a class="header" href="#the-problem-without-singleton">The Problem Without Singleton</a></h3>
+<pre><code class="language-cpp">class Database {
+public:
+    Database() {
+        cout &lt;&lt; "Database connection created" &lt;&lt; endl;
+    }
+    
+    void query(string sql) {
+        cout &lt;&lt; "Executing: " &lt;&lt; sql &lt;&lt; endl;
+    }
+};
+
+int main() {
+    Database db1;  // Creates connection 1
+    Database db2;  // Creates connection 2 - Wasteful!
+    Database db3;  // Creates connection 3 - More waste!
+    
+    // We wanted ONE connection, but got THREE!
+    return 0;
+}
+</code></pre>
+<h3 id="how-static-members-achieve-singleton"><a class="header" href="#how-static-members-achieve-singleton">How Static Members Achieve Singleton</a></h3>
+<p>The Singleton pattern uses:</p>
+<ol>
+<li><strong>Private constructor</strong> - Prevents external instantiation</li>
+<li><strong>Static instance</strong> - Holds the single instance</li>
+<li><strong>Static function</strong> - Provides global access to the instance</li>
+</ol>
+<h3 id="basic-singleton-implementation"><a class="header" href="#basic-singleton-implementation">Basic Singleton Implementation</a></h3>
+<pre><code class="language-cpp">class Singleton {
+private:
+    // Private constructor - cannot create from outside
+    Singleton() {
+        cout &lt;&lt; "Singleton instance created" &lt;&lt; endl;
+    }
+    
+    // Static pointer to hold the single instance
+    static Singleton* instance;
+    
+public:
+    // Static function to get the instance
+    static Singleton* getInstance() {
+        if (instance == nullptr) {
+            instance = new Singleton();  // Create only once
+        }
+        return instance;
+    }
+    
+    void doSomething() {
+        cout &lt;&lt; "Doing something..." &lt;&lt; endl;
+    }
+};
+
+// Define the static member
+Singleton* Singleton::instance = nullptr;
+
+int main() {
+    // Singleton s;  // ERROR! Constructor is private
+    
+    Singleton* s1 = Singleton::getInstance();  // Creates instance
+    Singleton* s2 = Singleton::getInstance();  // Returns same instance
+    Singleton* s3 = Singleton::getInstance();  // Returns same instance
+    
+    cout &lt;&lt; "s1 address: " &lt;&lt; s1 &lt;&lt; endl;
+    cout &lt;&lt; "s2 address: " &lt;&lt; s2 &lt;&lt; endl;
+    cout &lt;&lt; "s3 address: " &lt;&lt; s3 &lt;&lt; endl;
+    // All three have the SAME address!
+    
+    s1-&gt;doSomething();
+    
+    return 0;
+}
+
+/* Output:
+   Singleton instance created       (only once!)
+   s1 address: 0x1234abcd
+   s2 address: 0x1234abcd           (same address)
+   s3 address: 0x1234abcd           (same address)
+   Doing something...
+*/
+</code></pre>
+<h3 id="visual-diagram-singleton-pattern"><a class="header" href="#visual-diagram-singleton-pattern">Visual Diagram: Singleton Pattern</a></h3>
+<pre><code>Without Singleton:
+    main()
+      │
+      ├─→ new Object()  ──→  Instance 1  ┐
+      │                                    │
+      ├─→ new Object()  ──→  Instance 2   ├─ Multiple instances (wasteful)
+      │                                    │
+      └─→ new Object()  ──→  Instance 3  ┘
+
+
+With Singleton:
+    main()
+      │
+      ├─→ getInstance()  ─┐
+      │                   │
+      ├─→ getInstance()  ─┼─→  Single Instance  ← Static member
+      │                   │
+      └─→ getInstance()  ─┘
+      
+    All calls return the SAME instance!
+</code></pre>
+<h3 id="real-world-example-logger-singleton"><a class="header" href="#real-world-example-logger-singleton">Real-World Example: Logger Singleton</a></h3>
+<pre><code class="language-cpp">class Logger {
+private:
+    static Logger* instance;
+    string logFile;
+    
+    // Private constructor
+    Logger() {
+        logFile = "application.log";
+        cout &lt;&lt; "Logger initialized with file: " &lt;&lt; logFile &lt;&lt; endl;
+    }
+    
+public:
+    // Prevent copying
+    Logger(const Logger&amp;) = delete;
+    Logger&amp; operator=(const Logger&amp;) = delete;
+    
+    static Logger* getInstance() {
+        if (instance == nullptr) {
+            instance = new Logger();
+        }
+        return instance;
+    }
+    
+    void log(string level, string message) {
+        cout &lt;&lt; "[" &lt;&lt; level &lt;&lt; "] " &lt;&lt; message &lt;&lt; endl;
+        // In real code, would write to logFile
+    }
+    
+    void setLogFile(string filename) {
+        logFile = filename;
+    }
+};
+
+Logger* Logger::instance = nullptr;
+
+int main() {
+    // Multiple parts of the program can access the same logger
+    Logger::getInstance()-&gt;log("INFO", "Application started");
+    Logger::getInstance()-&gt;log("DEBUG", "Processing data...");
+    Logger::getInstance()-&gt;log("ERROR", "Something went wrong!");
+    
+    // Only ONE Logger instance was created for all these calls
+    
+    return 0;
+}
+
+/* Output:
+   Logger initialized with file: application.log    (only once!)
+   [INFO] Application started
+   [DEBUG] Processing data...
+   [ERROR] Something went wrong!
+*/
+</code></pre>
+<h3 id="thread-safe-singleton-modern-c"><a class="header" href="#thread-safe-singleton-modern-c">Thread-Safe Singleton (Modern C++)</a></h3>
+<p>The basic singleton above isn't thread-safe. Here's a better approach using <strong>Meyer's Singleton</strong> (C++11):</p>
+<pre><code class="language-cpp">class ThreadSafeLogger {
+private:
+    ThreadSafeLogger() {
+        cout &lt;&lt; "ThreadSafeLogger created" &lt;&lt; endl;
+    }
+    
+public:
+    // Prevent copying
+    ThreadSafeLogger(const ThreadSafeLogger&amp;) = delete;
+    ThreadSafeLogger&amp; operator=(const ThreadSafeLogger&amp;) = delete;
+    
+    static ThreadSafeLogger&amp; getInstance() {
+        static ThreadSafeLogger instance;  // Created only once, thread-safe!
+        return instance;
+    }
+    
+    void log(string message) {
+        cout &lt;&lt; "LOG: " &lt;&lt; message &lt;&lt; endl;
+    }
+};
+
+int main() {
+    ThreadSafeLogger::getInstance().log("Message 1");
+    ThreadSafeLogger::getInstance().log("Message 2");
+    
+    // Same instance, guaranteed thread-safe by C++11 standard
+    
+    return 0;
+}
+</code></pre>
+<p><strong>Why this is better:</strong></p>
+<ul>
+<li>No need for manual pointer management</li>
+<li>Thread-safe by language guarantee (C++11+)</li>
+<li>Automatic cleanup when program ends</li>
+<li>Simpler code</li>
+</ul>
+<h3 id="destroying-the-singleton-instance"><a class="header" href="#destroying-the-singleton-instance">Destroying the Singleton Instance</a></h3>
+<p>Unlike regular objects, Singleton instances need careful cleanup management. Here are different approaches:</p>
+<h4 id="approach-1-manual-cleanup-with-destroy-method"><a class="header" href="#approach-1-manual-cleanup-with-destroy-method">Approach 1: Manual Cleanup with destroy() Method</a></h4>
+<pre><code class="language-cpp">class Database {
+private:
+    static Database* instance;
+    
+    Database() {
+        cout &lt;&lt; "Database connection opened" &lt;&lt; endl;
+    }
+    
+    ~Database() {
+        cout &lt;&lt; "Database connection closed" &lt;&lt; endl;
+    }
+    
+public:
+    Database(const Database&amp;) = delete;
+    Database&amp; operator=(const Database&amp;) = delete;
+    
+    static Database* getInstance() {
+        if (instance == nullptr) {
+            instance = new Database();
+        }
+        return instance;
+    }
+    
+    // Method to explicitly destroy the instance
+    static void destroyInstance() {
+        if (instance != nullptr) {
+            delete instance;
+            instance = nullptr;
+            cout &lt;&lt; "Singleton instance destroyed" &lt;&lt; endl;
+        }
+    }
+    
+    void query(string sql) {
+        cout &lt;&lt; "Executing: " &lt;&lt; sql &lt;&lt; endl;
+    }
+};
+
+Database* Database::instance = nullptr;
+
+int main() {
+    Database::getInstance()-&gt;query("SELECT * FROM users");
+    Database::getInstance()-&gt;query("INSERT INTO logs...");
+    
+    // Manually destroy when done
+    Database::destroyInstance();
+    
+    // Can recreate if needed
+    Database::getInstance()-&gt;query("SELECT * FROM products");
+    
+    // Clean up again
+    Database::destroyInstance();
+    
+    return 0;
+}
+
+/* Output:
+   Database connection opened
+   Executing: SELECT * FROM users
+   Executing: INSERT INTO logs...
+   Database connection closed
+   Singleton instance destroyed
+   Database connection opened           (recreated!)
+   Executing: SELECT * FROM products
+   Database connection closed
+   Singleton instance destroyed
+*/
+</code></pre>
+<h4 id="approach-2-automatic-cleanup-meyers-singleton---recommended"><a class="header" href="#approach-2-automatic-cleanup-meyers-singleton---recommended">Approach 2: Automatic Cleanup (Meyer's Singleton - Recommended)</a></h4>
+<pre><code class="language-cpp">class Logger {
+private:
+    Logger() {
+        cout &lt;&lt; "Logger created" &lt;&lt; endl;
+    }
+    
+    ~Logger() {
+        cout &lt;&lt; "Logger destroyed (automatic cleanup)" &lt;&lt; endl;
+    }
+    
+public:
+    Logger(const Logger&amp;) = delete;
+    Logger&amp; operator=(const Logger&amp;) = delete;
+    
+    static Logger&amp; getInstance() {
+        static Logger instance;  // Automatically destroyed at program end!
+        return instance;
+    }
+    
+    void log(string message) {
+        cout &lt;&lt; "LOG: " &lt;&lt; message &lt;&lt; endl;
+    }
+};
+
+int main() {
+    Logger::getInstance().log("Application started");
+    Logger::getInstance().log("Processing data");
+    
+    // No need to manually destroy!
+    // Destructor automatically called when program ends
+    
+    return 0;
+}
+
+/* Output:
+   Logger created
+   LOG: Application started
+   LOG: Processing data
+   Logger destroyed (automatic cleanup)    ← Automatic!
+*/
+</code></pre>
+<h4 id="approach-3-smart-pointers-modern-c-style"><a class="header" href="#approach-3-smart-pointers-modern-c-style">Approach 3: Smart Pointers (Modern C++ Style)</a></h4>
+<pre><code class="language-cpp">class Cache {
+private:
+    static unique_ptr&lt;Cache&gt; instance;
+    
+    Cache() {
+        cout &lt;&lt; "Cache initialized" &lt;&lt; endl;
+    }
+    
+    ~Cache() {
+        cout &lt;&lt; "Cache destroyed" &lt;&lt; endl;
+    }
+    
+public:
+    Cache(const Cache&amp;) = delete;
+    Cache&amp; operator=(const Cache&amp;) = delete;
+    
+    static Cache* getInstance() {
+        if (instance == nullptr) {
+            instance = unique_ptr&lt;Cache&gt;(new Cache());
+        }
+        return instance.get();
+    }
+    
+    // Optional: Manual reset
+    static void reset() {
+        instance.reset();  // Automatically deletes and sets to nullptr
+        cout &lt;&lt; "Cache reset" &lt;&lt; endl;
+    }
+    
+    void store(string key, string value) {
+        cout &lt;&lt; "Stored: " &lt;&lt; key &lt;&lt; " = " &lt;&lt; value &lt;&lt; endl;
+    }
+};
+
+unique_ptr&lt;Cache&gt; Cache::instance = nullptr;
+
+int main() {
+    Cache::getInstance()-&gt;store("user", "Alice");
+    Cache::getInstance()-&gt;store("session", "xyz123");
+    
+    // Manual cleanup if needed
+    Cache::reset();
+    
+    // Can recreate
+    Cache::getInstance()-&gt;store("user", "Bob");
+    
+    // Automatic cleanup at program end even without reset()
+    return 0;
+}
+
+/* Output:
+   Cache initialized
+   Stored: user = Alice
+   Stored: session = xyz123
+   Cache destroyed
+   Cache reset
+   Cache initialized
+   Stored: user = Bob
+   Cache destroyed              ← Automatic cleanup at program end
+*/
+</code></pre>
+<h4 id="approach-4-atexit-for-guaranteed-cleanup"><a class="header" href="#approach-4-atexit-for-guaranteed-cleanup">Approach 4: atexit() for Guaranteed Cleanup</a></h4>
+<pre><code class="language-cpp">class ResourceManager {
+private:
+    static ResourceManager* instance;
+    
+    ResourceManager() {
+        cout &lt;&lt; "Resources allocated" &lt;&lt; endl;
+    }
+    
+    ~ResourceManager() {
+        cout &lt;&lt; "Resources released" &lt;&lt; endl;
+    }
+    
+    static void cleanup() {
+        if (instance != nullptr) {
+            delete instance;
+            instance = nullptr;
+        }
+    }
+    
+public:
+    ResourceManager(const ResourceManager&amp;) = delete;
+    ResourceManager&amp; operator=(const ResourceManager&amp;) = delete;
+    
+    static ResourceManager* getInstance() {
+        if (instance == nullptr) {
+            instance = new ResourceManager();
+            atexit(cleanup);  // Register cleanup function
+        }
+        return instance;
+    }
+    
+    void manage() {
+        cout &lt;&lt; "Managing resources..." &lt;&lt; endl;
+    }
+};
+
+ResourceManager* ResourceManager::instance = nullptr;
+
+int main() {
+    ResourceManager::getInstance()-&gt;manage();
+    ResourceManager::getInstance()-&gt;manage();
+    
+    // No manual cleanup needed!
+    // atexit() ensures cleanup() is called when program exits
+    
+    return 0;
+}
+
+/* Output:
+   Resources allocated
+   Managing resources...
+   Managing resources...
+   Resources released        ← Called by atexit() automatically
+*/
+</code></pre>
+<h3 id="comparison-cleanup-approaches"><a class="header" href="#comparison-cleanup-approaches">Comparison: Cleanup Approaches</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Approach</th><th>Pros</th><th>Cons</th><th>Best For</th></tr></thead><tbody>
+<tr><td><strong>Manual destroy()</strong></td><td>Full control, can reset/recreate</td><td>Must remember to call, easy to forget</td><td>When you need explicit control</td></tr>
+<tr><td><strong>Meyer's Singleton</strong></td><td>Automatic, thread-safe, simple</td><td>Can't reset during program execution</td><td>Most use cases (RECOMMENDED)</td></tr>
+<tr><td><strong>Smart Pointers</strong></td><td>Automatic memory management, can reset</td><td>Slightly more complex syntax</td><td>When you need reset capability</td></tr>
+<tr><td><strong>atexit()</strong></td><td>Guaranteed cleanup, automatic</td><td>Less common pattern, global function</td><td>Legacy code or special requirements</td></tr>
+</tbody></table>
+</div>
+<h3 id="important-notes-about-destruction"><a class="header" href="#important-notes-about-destruction">Important Notes About Destruction</a></h3>
+<ol>
+<li><strong>Meyer's Singleton is usually best</strong> - Automatic, safe, simple</li>
+<li><strong>Order of destruction matters</strong> - If Singleton A depends on Singleton B, destruction order can cause issues</li>
+<li><strong>Don't access after destruction</strong> - If manually destroyed, ensure no further access</li>
+<li><strong>Memory leaks in basic pointer version</strong> - If you never call delete, memory is leaked (but OS cleans up at program end)</li>
+</ol>
+<h3 id="destruction-order-example-potential-issue"><a class="header" href="#destruction-order-example-potential-issue">Destruction Order Example (Potential Issue)</a></h3>
+<pre><code class="language-cpp">class Logger {
+private:
+    Logger() { cout &lt;&lt; "Logger created" &lt;&lt; endl; }
+    ~Logger() { cout &lt;&lt; "Logger destroyed" &lt;&lt; endl; }
+    
+public:
+    static Logger&amp; getInstance() {
+        static Logger instance;
+        return instance;
+    }
+    
+    void log(string msg) { cout &lt;&lt; "LOG: " &lt;&lt; msg &lt;&lt; endl; }
+};
+
+class Database {
+private:
+    Database() {
+        Logger::getInstance().log("Database created");
+    }
+    
+    ~Database() {
+        // DANGER: Logger might be destroyed already!
+        Logger::getInstance().log("Database destroyed");
+    }
+    
+public:
+    static Database&amp; getInstance() {
+        static Database instance;
+        return instance;
+    }
+};
+
+int main() {
+    Database::getInstance();
+    // At program end, destruction order of static objects is undefined!
+    // If Logger is destroyed before Database, the log() call in ~Database() fails!
+    return 0;
+}
+</code></pre>
+<p><strong>Solution:</strong> Avoid dependencies between Singletons' destructors, or use dependency injection instead of Singleton pattern.</p>
+<h3 id="key-points-about-singleton-pattern"><a class="header" href="#key-points-about-singleton-pattern">Key Points About Singleton Pattern</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Aspect</th><th>Details</th></tr></thead><tbody>
+<tr><td><strong>Purpose</strong></td><td>Ensure only one instance of a class exists</td></tr>
+<tr><td><strong>Private Constructor</strong></td><td>Prevents direct instantiation</td></tr>
+<tr><td><strong>Static Instance</strong></td><td>Holds the single instance (shared by all)</td></tr>
+<tr><td><strong>Static Access Method</strong></td><td>Provides global access point</td></tr>
+<tr><td><strong>Thread Safety</strong></td><td>Use Meyer's Singleton (static local) for thread safety</td></tr>
+<tr><td><strong>Use Cases</strong></td><td>Logger, Config, DB Connection Pool, Cache</td></tr>
+</tbody></table>
+</div>
+<h3 id="pros-and-cons-of-singleton"><a class="header" href="#pros-and-cons-of-singleton">Pros and Cons of Singleton</a></h3>
+<p><strong>Pros:</strong></p>
+<ul>
+<li>✓ Controlled access to single instance</li>
+<li>✓ Reduced memory footprint</li>
+<li>✓ Global access point</li>
+<li>✓ Lazy initialization (created when first needed)</li>
+</ul>
+<p><strong>Cons:</strong></p>
+<ul>
+<li>✗ Can make unit testing difficult</li>
+<li>✗ Violates Single Responsibility Principle</li>
+<li>✗ Can introduce global state issues</li>
+<li>✗ Requires careful handling in multi-threaded environments</li>
+</ul>
+<h3 id="when-to-use-singleton"><a class="header" href="#when-to-use-singleton">When to Use Singleton</a></h3>
+<p>✓ <strong>Use when:</strong></p>
+<ul>
+<li>Only one instance should exist (e.g., hardware device manager)</li>
+<li>Global access point is needed</li>
+<li>Lazy initialization is beneficial</li>
+</ul>
+<p>✗ <strong>Don't use when:</strong></p>
+<ul>
+<li>You might need multiple instances in the future</li>
+<li>It complicates testing</li>
+<li>Dependency injection would be cleaner</li>
+</ul>
+<p><a href="static.html#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr />
+<h2 id="6-static-vs-non-static-key-differences"><a class="header" href="#6-static-vs-non-static-key-differences">6. Static vs Non-Static: Key Differences</a></h2>
+<h3 id="comparison-table-static-vs-non-static"><a class="header" href="#comparison-table-static-vs-non-static">Comparison Table: Static vs Non-Static</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Feature</th><th>Static Members</th><th>Non-Static Members</th></tr></thead><tbody>
+<tr><td><strong>Belongs To</strong></td><td>Class</td><td>Object</td></tr>
+<tr><td><strong>Memory</strong></td><td>One copy per class</td><td>One copy per object</td></tr>
+<tr><td><strong>Access</strong></td><td>ClassName::member or object.member</td><td>object.member only</td></tr>
+<tr><td><strong>Lifetime</strong></td><td>Entire program</td><td>Object's lifetime</td></tr>
+<tr><td><strong>this Pointer</strong></td><td>Not available</td><td>Available</td></tr>
+<tr><td><strong>Can Access</strong></td><td>Only static members</td><td>Both static and non-static</td></tr>
+<tr><td><strong>Use Case</strong></td><td>Shared data/utilities</td><td>Object-specific data</td></tr>
+</tbody></table>
+</div>
+<h3 id="real-world-analogy"><a class="header" href="#real-world-analogy">Real-World Analogy</a></h3>
+<p>Think of a <strong>company</strong> (class) and <strong>employees</strong> (objects):</p>
+<p><strong>Static Members</strong> = Company-wide policies/resources</p>
+<ul>
+<li>Total employee count (shared data)</li>
+<li>Company-wide holiday list (shared configuration)</li>
+<li>HR policies (static functions)</li>
+<li>These affect ALL employees equally</li>
+</ul>
+<p><strong>Non-Static Members</strong> = Individual employee properties</p>
+<ul>
+<li>Employee name (unique to each)</li>
+<li>Employee salary (unique to each)</li>
+<li>Individual performance review (non-static function)</li>
+<li>These are specific to each employee</li>
+</ul>
+<pre><code class="language-cpp">class Company {
+public:
+    // Static: Shared by all employees
+    static string companyName;
+    static int totalEmployees;
+    static double companyRevenue;
+    
+    // Non-static: Unique to each employee
+    string employeeName;
+    double employeeSalary;
+    string department;
+    
+    // Static function: Company-level operation
+    static void announceCompanyMeeting() {
+        cout &lt;&lt; companyName &lt;&lt; " meeting at 3 PM!" &lt;&lt; endl;
+    }
+    
+    // Non-static function: Employee-specific operation
+    void giveRaise(double amount) {
+        employeeSalary += amount;
+    }
+};
+</code></pre>
+<p><a href="static.html#table-of-contents">↑ Back to Table of Contents</a></p>
+<hr />
+<h2 id="summary-static-members-key-concepts"><a class="header" href="#summary-static-members-key-concepts">Summary: Static Members Key Concepts</a></h2>
+<h3 id="quick-reference-1"><a class="header" href="#quick-reference-1">Quick Reference</a></h3>
+<pre><code>Static Data Members:
+✓ Shared by all objects of the class
+✓ One copy per class, not per object
+✓ Must be defined outside class
+✓ Accessed using ClassName::member or object.member
+✓ Lifetime: Entire program duration
+
+Static Member Functions:
+✓ Belong to the class, not objects
+✓ Called using ClassName::function()
+✓ No 'this' pointer
+✓ Can only access static members
+✓ Cannot be virtual, const, or override
+✓ Used for class-level operations
+
+When to Use Static:</code></pre>
 
                     </main>
 
