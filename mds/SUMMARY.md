@@ -9,3 +9,4 @@
 - [Inheritance](./inheritance.md)
 - [Constuctors and Destructors](./constructor.md)
 - [Construtors and Destructors in Inheritance](./constructor_and_inheritance.md)
+- [C++ Static Members](./static.md)
