@@ -1,4 +1,4 @@
-# C++11 final Keyword Tutorial
+# C++11 final Keyword
 
 ## Table of Contents
 - [What is the final Keyword?](#what-is-the-final-keyword)
