@@ -983,3 +983,92 @@ Base Destructor
 **Rule of Thumb:** If a class has any virtual functions, its destructor should be virtual too!
 
 [↑ Back to Table of Contents](#table-of-contents)
+
+## Overloading vs Overriding: Quick Comparison
+
+Here's a side-by-side comparison to help you understand the key differences:
+
+| **Aspect** | **Function Overloading** | **Function Overriding** |
+|------------|-------------------------|------------------------|
+| **Type of Polymorphism** | Static (Compile-time) | Dynamic (Runtime) |
+| **When is it resolved?** | At compile time | At runtime |
+| **Where does it occur?** | Same class (or across classes) | Base and derived classes (inheritance required) |
+| **Function signature** | Must be different (different parameters) | Must be same (same name, parameters, return type) |
+| **`virtual` keyword** | Not required | Required in base class |
+| **`override` keyword** | Not applicable | Recommended (C++11+) |
+| **Function name** | Same name, different parameters | Same name, same parameters |
+| **Return type** | Can be same or different | Must be same (or covariant) |
+| **Purpose** | Provide multiple ways to call same function name with different arguments | Provide specific implementation in derived class for base class behavior |
+| **Example** | `print(int)`, `print(double)`, `print(string)` | Base: `virtual void draw()`, Derived: `void draw() override` |
+| **Relationship** | Independent functions in same scope | Child class redefines parent class function |
+| **Pointer/Reference type** | Not relevant (direct call) | Important (base pointer/reference to derived object) |
+
+### Quick Example Comparison
+
+```cpp
+#include <iostream>
+using namespace std;
+
+// OVERLOADING (Static Polymorphism)
+class Calculator {
+public:
+    int add(int a, int b) {
+        return a + b;
+    }
+    
+    double add(double a, double b) {  // Different parameter types
+        return a + b;
+    }
+    
+    int add(int a, int b, int c) {  // Different number of parameters
+        return a + b + c;
+    }
+};
+
+// OVERRIDING (Dynamic Polymorphism)
+class Animal {
+public:
+    virtual void sound() {
+        cout << "Animal makes a sound\n";
+    }
+};
+
+class Dog : public Animal {
+public:
+    void sound() override {  // Same signature, different implementation
+        cout << "Dog barks\n";
+    }
+};
+
+int main() {
+    // Overloading - Compiler decides which function to call
+    Calculator calc;
+    cout << calc.add(5, 3) << "\n";        // Calls add(int, int)
+    cout << calc.add(5.5, 3.2) << "\n";    // Calls add(double, double)
+    cout << calc.add(1, 2, 3) << "\n";     // Calls add(int, int, int)
+    
+    cout << "---\n";
+    
+    // Overriding - Runtime decides which function to call
+    Animal* animalPtr = new Dog();
+    animalPtr->sound();  // Calls Dog::sound() at runtime
+    
+    delete animalPtr;
+    return 0;
+}
+```
+
+**Output:**
+```
+8
+8.7
+6
+---
+Dog barks
+```
+
+**Key Takeaway:**
+- **Overloading** = Same name, different signatures → Compile-time decision
+- **Overriding** = Same name, same signature, inheritance → Runtime decision
+
+[↑ Back to Table of Contents](#table-of-contents)
