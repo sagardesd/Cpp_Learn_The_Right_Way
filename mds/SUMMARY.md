@@ -12,3 +12,4 @@
 - [Construtors and Destructors in Inheritance](./constructor_and_inheritance.md)
 - [C++11 Advanced Constructor Features](./cpp11_constructors.md)
 - [Static Members And Singleton Class](./static.md)
+- [Polymorphism](./polymorphism.md)
