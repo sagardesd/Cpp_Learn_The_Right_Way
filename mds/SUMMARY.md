@@ -15,3 +15,4 @@
 - [Polymorphism](./polymorphism.md)
    - [Final keyword(C++11)](./cpp11_final_keyword.md)
 - [Abstract class and Abstraction](./abstract_class.md)
+- [Friend function and Class](./friend.md)
