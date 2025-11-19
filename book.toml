@@ -1,5 +1,5 @@
 [book]
-authors = "Sagar Kumar Madala"
+authors = ["Sagar Kumar Madala"]
 language = "en"
 src = "mds"
 
