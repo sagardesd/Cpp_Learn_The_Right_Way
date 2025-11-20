@@ -1,26 +1,15 @@
-# C++ Templates Tutorial
+# Function Template
 
 ## Table of Contents
 
-1. [What Are Templates?](#what-are-templates)
-2. [Visualize the Problem](#visualize-the-problem)
-3. [Function Templates](#function-templates)
-4. [How Function Templates Work](#how-function-templates-work)
-5. [How to Call Template Functions](#how-to-call-template-functions)
+1. [Visualize the Problem](#visualize-the-problem)
+2. [Function Templates](#function-templates)
+3. [How Function Templates Work](#how-function-templates-work)
+4. [How to Call Template Functions](#how-to-call-template-functions)
    - [Option 1: Implicit Instantiation](#option-1-implicit-instantiation)
    - [Option 2: Explicit Instantiation](#option-2-explicit-instantiation)
-6. [Templates vs Functions](#templates-vs-functions)
-7. [Key Takeaways and Summary](#key-takeaways-and-summary)
-
----
-
-## What Are Templates?
-
-**Templates are C++'s way of writing generic code that can work on any data type (built-in and user-defined).**
-
-In essence, templates automate code generation. You write the function logic once, and the compiler generates the necessary versions for each data type you use.
-
-[↑ Back to Table of Contents](#table-of-contents)
+5. [Templates vs Functions](#templates-vs-functions)
+6. [Key Takeaways and Summary](#key-takeaways-and-summary)
 
 ---
 
